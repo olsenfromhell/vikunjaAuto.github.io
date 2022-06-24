@@ -1,10 +1,11 @@
 import chai from 'chai';
-import {run, stop, login} from "../lib/browser.js";
-
+import { run, stop } from "../lib/browser.js";
+import ap from '../framework/pages/index.js';
 const assert = chai.assert;
 
 describe ('Testing Vikunja', () => {
-    let page;
+    let page; let myApp;
+
     const createAccountBtn = 'div > div > #loginform > .mt-2 > a';
     const mainPageLoginText = '.no-auth-wrapper > .noauth-container > .content > div > .title';
     const changeVikunjaInstallationBtn = '.content > div > .api-config > .api-url-info > a';
@@ -17,12 +18,14 @@ describe ('Testing Vikunja', () => {
     const profileDropdownMenuAbout = '.user > .dropdown > .dropdown-menu > .dropdown-content > .base-button:nth-child(3)';
     const profileDropdownAboutModalCloseBtn = '.card > .card-content > .content > .modal-card-foot > .base-button';
     const profileDropdownAboutModalXsign = '.card > .card-header > .card-header-icon > .icon > .svg-inline--fa';
+    const aboutModalTextContent = 'modal-container > .modal-content > .card > .card-header > .card-header-title';
 
 
     beforeEach(async () => {
         page = await run('https://try.vikunja.io/');
+        myApp = ap(page);
     });
-    afterEach(async ()=> {
+    afterEach(async () => {
         await stop();
     });
 
@@ -52,7 +55,7 @@ describe ('Testing Vikunja', () => {
     });
 
     it('Logout через дропдаун-меню в профиле', async () => {
-        await login();
+        await myApp.Login().signin('demo', 'demo');
         await page.waitForSelector(profileDropdownMenu);
         await page.click(profileDropdownMenu);
         await page.waitForSelector(profileDropdownMenuLogout);
@@ -62,12 +65,14 @@ describe ('Testing Vikunja', () => {
     });
 
     it('Открытие About через дропдаун-меню в профиле', async () => {
-        await login();
+        await myApp.Login().signin('demo', 'demo');
         await page.waitForSelector(profileDropdownMenu);
         await page.click(profileDropdownMenu);
         await page.waitForSelector(profileDropdownMenuAbout);
         await page.click(profileDropdownMenuAbout);
         await page.waitForSelector(profileDropdownAboutModalCloseBtn);
         await page.waitForSelector(profileDropdownAboutModalXsign);
+        const profileDropdownAboutModalCloseBtnText = await page.textContent(profileDropdownAboutModalCloseBtn);
+        assert.strictEqual(profileDropdownAboutModalCloseBtnText, 'Закрыть', 'Текст Закрыть в кнопке закрытия модалки About не найден');
     });
 });
